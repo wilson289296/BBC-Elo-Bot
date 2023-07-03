@@ -88,7 +88,7 @@ async def getLb(interaction: discord.Interaction):
         await interaction.response.send_message(string)
 
 
-with open('token') as f:
+with open('token.key') as f:
     token = f.readline()
 
 bot.run(token)
