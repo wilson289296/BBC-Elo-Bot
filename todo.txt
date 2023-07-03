@@ -1,2 +1,3 @@
-addplayer needs to check if already existing
-change outputs to embeds
+[DONE] addplayer needs to check if already existing
+change outputs to embeds (mostly done)
+add "games played" tracker, and add display to leaderboard embed

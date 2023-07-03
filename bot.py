@@ -37,6 +37,7 @@ async def on_ready():
     except Exception as e:
         print(e)
 
+
 @bot.tree.command(name = "2v2game")
 @app_commands.describe(p1 = "Name of player 1", 
                        p2 = "Name of player 2", 
@@ -44,26 +45,29 @@ async def on_ready():
                        p4 = "Name of player 4", 
                        score1 = "Score of team 1", 
                        score2 = "Score of team 2")
-async def add2pGame(interaction: discord.Interaction, p1: str, p2: str, p3: str, p4: str, score1: int, score2: int):
+async def add2v2Game(interaction: discord.Interaction, p1: str, p2: str, p3: str, p4: str, score1: int, score2: int):
     lb = loadLb()
     # NEED TO CHECK IF PLAYERS EXIST FIRST
     try:
-        string = lb.add2pGame(p1, p2, p3, p4, score1, score2, report=True)
-        print(string)
+        telemetry = lb.add2pGame(p1, p2, p3, p4, score1, score2)
         saveLb(lb)
-        await interaction.response.send_message(string)
+        await interaction.response.send_message(embed=make2v2Embed(interaction, telemetry))
     except:
         await interaction.response.send_message(f"An error occurred.")
+
 
 @bot.tree.command(name = "addplayer")
 @app_commands.describe(name = "Name of new player")
 async def addPlayer(interaction: discord.Interaction, name: str):
     lb = loadLb()
-    lb.addPlayer(name)
-    lb.getPlayers()
-    saveLb(lb)
-    print(f"Added new player {name} to leaderboard")
-    await interaction.response.send_message(f"Added new player {name}")
+    if lb.addPlayer(name):
+        saveLb(lb)
+        print(f"Added new player {name} to leaderboard")
+        await interaction.response.send_message(embed=makeNewPlayerEmbed(interaction, name))
+    else:
+        print(f"Attempted to add new player but \"{name}\" already exists.")
+        await interaction.response.send_message(f":exclamation: Attempted to add new player but \"{name}\" already exists. :exclamation:")
+
 
 @bot.tree.command(name="setelo")
 @app_commands.describe(name = "Name of player to adjust", elo = "Elo value to set")
@@ -75,17 +79,75 @@ async def setElo(interaction: discord.Interaction, name: str, elo: int):
     else: 
         await interaction.response.send_message(f"That person doesn't exist.")
 
+
 @bot.tree.command(name="leaderboard")
 async def getLb(interaction: discord.Interaction):
+    # print("Leaderboard requested:")
+    # lb = loadLb()
+    # string = lb.getPlayers()
+    # if len(string) == 0:
+    #     print("Leaderboard file is empty.")
+    #     await interaction.response.send_message("Leaderboard file is empty.")
+    # else:
+    #     print(string)
+    #     await interaction.response.send_message(string)
     print("Leaderboard requested:")
     lb = loadLb()
-    string = lb.getPlayers()
-    if len(string) == 0:
+    board = lb.getLeaderboard()
+    if len(board) == 0:
         print("Leaderboard file is empty.")
         await interaction.response.send_message("Leaderboard file is empty.")
     else:
-        print(string)
-        await interaction.response.send_message(string)
+        await interaction.response.send_message(embed=makeLeaderboardEmbed(interaction, board))
+
+
+def makeLeaderboardEmbed(interaction: discord.Interaction, board):
+    embed = discord.Embed(
+        title=f"Leaderboard",
+        description=f"{interaction.user.display_name} requested the current leaderboard."
+    )
+    # make column of names
+    namestr = ""
+    elostr = ""
+    for count, pair in enumerate(board):
+        namestr += pair[1] + "\n"
+        elostr += f"{pair[0]:.2f}" + "\n"
+    embed.add_field(name="Player", value=namestr, inline=True)
+    embed.add_field(name="Elo rating", value=elostr, inline=True)
+    return embed
+
+def makeNewPlayerEmbed(interaction, name):
+    embed = discord.Embed(
+        title=f"New Player: {name}",
+        description=f"New player \"{name}\" added by {interaction.user.display_name} and initialized to 1500 elo.",
+    )
+    embed.add_field(name="Name", value=name, inline=True)
+    embed.add_field(name="ELO", value=1500, inline=True)
+    return embed
+
+def make2v2Embed(interaction, telemetry):
+    names = telemetry["names"]
+    embed = discord.Embed(
+        title=f"{interaction.user.display_name} has registered a new match.",
+        description=f"**{names[0]}** *and* **{names[1]}**  *vs.* **{names[2]}** *and* **{names[3]}**"
+    )
+    embed.add_field(name="Score", value=f"{telemetry['score'][0]} - {telemetry['score'][1]}", inline=True)
+    embed.add_field(name="Avg. Elo", value=telemetry['avgElo'], inline=True)
+    embed.add_field(name="Upset/Score Mult.", value=f"{telemetry['upsetMult']}/{telemetry['scoreDeltaMult']}", inline=True)
+    #compose player list, old elo, new elo
+    names = ""
+    oldElo = ""
+    newElo = ""
+    for i in range(len(telemetry["names"])):
+        names += "**" + telemetry["names"][i] + f"** *({telemetry['eloDelta'][i]})*\n"
+        oldElo += telemetry["oldElo"][i] + "\n"
+        newElo += "→ **" + telemetry["newElo"][i] + "**\n"
+
+    embed.add_field(name="Player", value=names, inline=True)
+    embed.add_field(name="Old Elo", value=oldElo, inline=True)
+    embed.add_field(name="New Elo", value=newElo, inline=True)
+    return embed
+
 
 
 with open('token.key') as f:
