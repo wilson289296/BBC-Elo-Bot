@@ -6,7 +6,18 @@ class Leaderboard:
         self.players = {}
         
     def addPlayer(self, name):
-        self.players[name] = 1500
+        if name in self.players:
+            return False
+        else:
+            self.players[name] = 1500
+            return True
+    
+    def delPlayer(self, name):
+        if name in self.players:
+            return False
+        else:
+            self.players.pop(name)
+            return True
 
     def setElo(self, name, elo):
         try:
@@ -22,6 +33,12 @@ class Leaderboard:
         for name in self.players.keys():
             string += f"{name} elo: {self.players[name]:.2f}\n"
         return string
+    
+    def getLeaderboard(self):
+        board = []
+        for key in self.players.keys():
+            board.append((self.players[key], key))
+        return sorted(board, reverse=True)
     
     def getUpsetMult(self, t1p1Elo, t1p2Elo, t2p1Elo, t2p2Elo, t1Score, t2Score, upsetConstant = 1):
         if t1Score >= t2Score:
@@ -53,7 +70,7 @@ class Leaderboard:
         delta = abs(t1Score - t2Score)
         return scoreDeltaConstant * delta / 21
 
-    def add2pGame(self, t1p1, t1p2, t2p1, t2p2, t1Score, t2Score, winElo = 100, lossElo = -100, report = False):
+    def add2pGame(self, t1p1, t1p2, t2p1, t2p2, t1Score, t2Score, winElo = 100, lossElo = -100):
         t1p1Elo = self.players[t1p1]
         t1p2Elo = self.players[t1p2]
         t2p1Elo = self.players[t2p1]
@@ -90,17 +107,41 @@ class Leaderboard:
             t2p2Change = winElo * upsetMult * self.getLobbyEloMult(lobbyElo, t2p2Elo, True) * scoreDeltaMult
             self.players[t2p2] += t2p2Change
 
-        if report:
-            string = ""
-            string += "\n"
-            string += f"{t1p1} and {t1p2}  vs. {t2p1} and {t2p2}\n"
-            string += f"{((t1p1Elo + t1p2Elo) / 2):.2f} vs. {((t2p1Elo + t2p2Elo) / 2):.2f}\n"
-            string += f"Average lobby Elo: {lobbyElo:.2f}\n"
-            string += f"Score: {t1Score} - {t2Score}\n"
-            string += f"{t1p1}: \n{t1p1Elo:.2f} --> {self.players[t1p1]:.2f} ({'+' if t1p1Change > 0 else ''}{t1p1Change:.2f}) (LobbyEloMult = {self.getLobbyEloMult(lobbyElo, t1p1Elo, t1Score > t2Score):.2f})\n"
-            string += f"{t1p2}: \n{t1p2Elo:.2f} --> {self.players[t1p2]:.2f} ({'+' if t1p2Change > 0 else ''}{t1p2Change:.2f}) (LobbyEloMult = {self.getLobbyEloMult(lobbyElo, t1p2Elo, t1Score > t2Score):.2f})\n"
-            string += f"{t2p1}: \n{t2p1Elo:.2f} --> {self.players[t2p1]:.2f} ({'+' if t2p1Change > 0 else ''}{t2p1Change:.2f}) (LobbyEloMult = {self.getLobbyEloMult(lobbyElo, t2p1Elo, t1Score < t2Score):.2f})\n"
-            string += f"{t2p2}: \n{t2p2Elo:.2f} --> {self.players[t2p2]:.2f} ({'+' if t2p2Change > 0 else ''}{t2p2Change:.2f}) (LobbyEloMult = {self.getLobbyEloMult(lobbyElo, t2p2Elo, t1Score < t2Score):.2f})\n"
-            string += f"Upset Multiplier: {upsetMult:.2f}\n"
-            string += f"Score delta multiplier: {scoreDeltaMult:.2f}\n"
-            return string
+        
+        # string = ""
+        # string += "\n"
+        # string += f"{t1p1} and {t1p2}  vs. {t2p1} and {t2p2}\n"
+        # string += f"{((t1p1Elo + t1p2Elo) / 2):.2f} vs. {((t2p1Elo + t2p2Elo) / 2):.2f}\n"
+        # string += f"Average lobby Elo: {lobbyElo:.2f}\n"
+        # string += f"Score: {t1Score} - {t2Score}\n"
+        # string += f"{t1p1}: \n{t1p1Elo:.2f} --> {self.players[t1p1]:.2f} ({'+' if t1p1Change > 0 else ''}{t1p1Change:.2f}) (LobbyEloMult = {self.getLobbyEloMult(lobbyElo, t1p1Elo, t1Score > t2Score):.2f})\n"
+        # string += f"{t1p2}: \n{t1p2Elo:.2f} --> {self.players[t1p2]:.2f} ({'+' if t1p2Change > 0 else ''}{t1p2Change:.2f}) (LobbyEloMult = {self.getLobbyEloMult(lobbyElo, t1p2Elo, t1Score > t2Score):.2f})\n"
+        # string += f"{t2p1}: \n{t2p1Elo:.2f} --> {self.players[t2p1]:.2f} ({'+' if t2p1Change > 0 else ''}{t2p1Change:.2f}) (LobbyEloMult = {self.getLobbyEloMult(lobbyElo, t2p1Elo, t1Score < t2Score):.2f})\n"
+        # string += f"{t2p2}: \n{t2p2Elo:.2f} --> {self.players[t2p2]:.2f} ({'+' if t2p2Change > 0 else ''}{t2p2Change:.2f}) (LobbyEloMult = {self.getLobbyEloMult(lobbyElo, t2p2Elo, t1Score < t2Score):.2f})\n"
+        # string += f"Upset Multiplier: {upsetMult:.2f}\n"
+        # string += f"Score delta multiplier: {scoreDeltaMult:.2f}\n"
+        # return string
+        telemetry = {}
+        telemetry["score"] = [t1Score, t2Score]
+        telemetry["avgElo"] = f"{lobbyElo:.2f}"
+        telemetry["names"] = [t1p1, t1p2, t2p1, t2p2]
+        telemetry["oldElo"] = [f"{t1p1Elo:.2f}", 
+                               f"{t1p2Elo:.2f}", 
+                               f"{t2p1Elo:.2f}", 
+                               f"{t2p2Elo:.2f}"
+            ]
+        telemetry["newElo"] = [
+            f"{self.players[t1p1]:.2f}", 
+            f"{self.players[t1p2]:.2f}", 
+            f"{self.players[t2p1]:.2f}", 
+            f"{self.players[t2p2]:.2f}"
+            ]
+        telemetry["eloDelta"] = [
+            f"{'+' if t1p1Change > 0 else ''}{t1p1Change:.2f}", 
+            f"{'+' if t1p1Change > 0 else ''}{t1p2Change:.2f}", 
+            f"{'+' if t1p1Change > 0 else ''}{t2p1Change:.2f}", 
+            f"{'+' if t1p1Change > 0 else ''}{t2p2Change:.2f}"
+            ]
+        telemetry["upsetMult"] = f"{upsetMult:.3f}"
+        telemetry["scoreDeltaMult"] = f"{scoreDeltaMult:.3f}"
+        return telemetry
