@@ -1,0 +1,2 @@
+addplayer needs to check if already existing
+change outputs to embeds
