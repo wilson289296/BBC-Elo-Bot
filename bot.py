@@ -38,7 +38,22 @@ async def on_ready():
         print(e)
 
 
-@bot.tree.command(name = "2v2game")
+@bot.tree.command(name = "singles")
+@app_commands.describe(player1="Name of player 1",
+                       player2="Name of player 2",
+                       score1="Score of player 1",
+                       score2="Score of player 2")
+async def add1v1Game(interaction: discord.Interaction, player1: str, player2: str, score1: int, score2: int):
+    lb = loadLb()
+    try:
+        telemetry = lb.add1pGame(player1, player2, score1, score2)
+        saveLb(lb)
+        
+        await interaction.response.send_message(embed=make1v1Embed(interaction, telemetry))
+    except:
+        await interaction.response.send_message(f"An error occurred.")
+
+@bot.tree.command(name = "doubles")
 @app_commands.describe(p1 = "Name of player 1", 
                        p2 = "Name of player 2", 
                        p3 = "Name of player 3", 
@@ -124,6 +139,29 @@ def makeNewPlayerEmbed(interaction, name):
     embed.add_field(name="Name", value=name, inline=True)
     embed.add_field(name="ELO", value=1500, inline=True)
     return embed
+
+def make1v1Embed(interaction, telemetry):
+    names = telemetry["names"]
+    embed = discord.Embed(
+            title=f"{interaction.user.display_name} has registered a new match.",
+            description=f"**{names[0]}**  *vs.* **{names[1]}**"
+        )
+    embed.add_field(name="Score", value=f"{telemetry['score'][0]} - {telemetry['score'][1]}", inline=True)
+    embed.add_field(name="Avg. Elo", value=telemetry['avgElo'], inline=True)
+    embed.add_field(name="Upset/Score Mult.", value=f"{telemetry['upsetMult']}/{telemetry['scoreDeltaMult']}", inline=True)
+    #compose player list, old elo, new elo
+    names = ""
+    oldElo = ""
+    newElo = ""
+    for i in range(len(telemetry["names"])):
+        names += "**" + telemetry["names"][i] + f"** *({telemetry['eloDelta'][i]})*\n"
+        oldElo += telemetry["oldElo"][i] + "\n"
+        newElo += "→ **" + telemetry["newElo"][i] + "**\n"
+    embed.add_field(name="Player", value=names, inline=True)
+    embed.add_field(name="Old Elo", value=oldElo, inline=True)
+    embed.add_field(name="New Elo", value=newElo, inline=True)
+    return embed
+
 
 def make2v2Embed(interaction, telemetry):
     names = telemetry["names"]
