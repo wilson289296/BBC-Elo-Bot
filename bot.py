@@ -85,14 +85,20 @@ async def addPlayer(interaction: discord.Interaction, name: str):
 
 
 @bot.tree.command(name="setelo")
-@app_commands.describe(name = "Name of player to adjust", elo = "Elo value to set")
-async def setElo(interaction: discord.Interaction, name: str, elo: int):
-    lb = loadLb()
-    if lb.setElo(name, elo):
-        saveLb(lb)
-        await interaction.response.send_message(f"Set {name} elo to {elo}.")
-    else: 
-        await interaction.response.send_message(f"That person doesn't exist.")
+@app_commands.describe(name = "Name of player to adjust", elo = "Elo value to set", password = "Admin password")
+async def setElo(interaction: discord.Interaction, name: str, elo: int, password: str):
+    with open('pw.key') as f:
+        pw = f.readline()
+    
+    if password == pw:
+        lb = loadLb()
+        if lb.setElo(name, elo):
+            saveLb(lb)
+            await interaction.response.send_message(f"Set {name} elo to {elo}.")
+        else: 
+            await interaction.response.send_message(f"That person doesn't exist.")
+    else:
+        await interaction.response.send_message(f"Incorrect password.")
 
 
 @bot.tree.command(name="leaderboard")
