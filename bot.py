@@ -2,21 +2,12 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from Leaderboard import Leaderboard
-import pickle
 import json
 import os
 
 #================================================= Generic funcs ========================================================
 
 def loadLb():
-    # if os.path.exists(os.getcwd()+"/lb.pickle"):
-    #     with open("lb.pickle", "rb") as f:
-    #         lb = pickle.load(f)
-    #     print("Leaderboard found and loaded.")
-    # else:
-    #     lb = Leaderboard()
-    #     print("Leaderboard file DNE, created new.")
-    # return lb
     if os.path.exists(os.getcwd()+"/lbdata.json"):
         with open("lbdata.json", "r") as f:
             lbdata = json.load(f)
@@ -29,9 +20,6 @@ def loadLb():
     return lb
 
 def saveLb(lb):
-    # with open("lb.pickle", "wb") as f:
-    #     pickle.dump(lb, f)
-    # print("Leaderboard saved.")
     lbdata = lb.dumpData()
     with open("lbdata.json", "w") as f:
         json.dump(lbdata, f)
