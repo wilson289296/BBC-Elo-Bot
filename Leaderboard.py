@@ -4,6 +4,12 @@ import random
 class Leaderboard:
     def __init__(self):
         self.players = {}
+
+    def loadData(self, players):
+        self.players = players
+    
+    def dumpData(self):
+        return self.players
         
     def addPlayer(self, name):
         if name in self.players:
