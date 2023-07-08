@@ -17,9 +17,11 @@ def loadLb():
     #     lb = Leaderboard()
     #     print("Leaderboard file DNE, created new.")
     # return lb
-    if os.path.exists(os.getcwd()+"/lb.json"):
-        with open("lb.json", "r") as f:
-            lb = json.load(f)
+    if os.path.exists(os.getcwd()+"/lbdata.json"):
+        with open("lbdata.json", "r") as f:
+            lbdata = json.load(f)
+        lb = Leaderboard()
+        lb.loadData(lbdata)
         print("Leaderboard found and loaded.")
     else:
         lb = Leaderboard()
@@ -30,8 +32,9 @@ def saveLb(lb):
     # with open("lb.pickle", "wb") as f:
     #     pickle.dump(lb, f)
     # print("Leaderboard saved.")
-    with open("lb.json", "w") as f:
-        json.dump(lb, f)
+    lbdata = lb.dumpData()
+    with open("lbdata.json", "w") as f:
+        json.dump(lbdata, f)
     print("Leaderboard saved.")
 
 def stringSanitation(string): # responds with False if sanitation fails, or responds with sanitized string if succeeds
