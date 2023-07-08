@@ -1,5 +1,5 @@
 from math import e
-import random
+from datetime import datetime
 
 class Leaderboard:
     def __init__(self):
@@ -15,7 +15,10 @@ class Leaderboard:
         if name in self.players:
             return False
         else:
-            self.players[name] = 1500
+            self.players[name] = {
+                "elo": 1500,
+                "matches": []
+            }
             return True
     
     def delPlayer(self, name):
@@ -27,8 +30,8 @@ class Leaderboard:
 
     def setElo(self, name, elo):
         try:
-            print(f"{self.players[name]} --> {elo}")
-            self.players[name] = elo
+            print(f"{self.players[name]['elo']} --> {elo}")
+            self.players[name]['elo'] = elo
             return True
         except:
             print("That person doesn't exist")
@@ -37,13 +40,13 @@ class Leaderboard:
     def getPlayers(self):
         string = ""
         for name in self.players.keys():
-            string += f"{name} elo: {self.players[name]:.2f}\n"
+            string += f"{name} elo: {self.players[name]['elo']:.2f}\n"
         return string
     
     def getLeaderboard(self):
         board = []
         for key in self.players.keys():
-            board.append((self.players[key], key))
+            board.append((self.players[key]['elo'], key))
         return sorted(board, reverse=True)
     
     def get2pUpsetMult(self, t1p1Elo, t1p2Elo, t2p1Elo, t2p2Elo, t1Score, t2Score, upsetConstant = 1):
@@ -87,10 +90,10 @@ class Leaderboard:
         return scoreDeltaConstant * delta / 21
 
     def add2pGame(self, t1p1, t1p2, t2p1, t2p2, t1Score, t2Score, winElo = 100, lossElo = -100):
-        t1p1Elo = self.players[t1p1]
-        t1p2Elo = self.players[t1p2]
-        t2p1Elo = self.players[t2p1]
-        t2p2Elo = self.players[t2p2]
+        t1p1Elo = self.players[t1p1]['elo']
+        t1p2Elo = self.players[t1p2]['elo']
+        t2p1Elo = self.players[t2p1]['elo']
+        t2p2Elo = self.players[t2p2]['elo']
         
         upsetMult = self.get2pUpsetMult(t1p1Elo, t1p2Elo, t2p1Elo, t2p2Elo, t1Score, t2Score)
         scoreDeltaMult = self.getScoreDeltaMult(t1Score, t2Score)
@@ -109,10 +112,10 @@ class Leaderboard:
             t2p2Change = winElo * upsetMult * self.getLobbyEloMult(lobbyElo, t2p2Elo, True) * scoreDeltaMult
             
 
-        self.players[t1p1] += t1p1Change
-        self.players[t1p2] += t1p2Change
-        self.players[t2p1] += t2p1Change
-        self.players[t2p2] += t2p2Change
+        self.players[t1p1]['elo'] += t1p1Change
+        self.players[t1p2]['elo'] += t1p2Change
+        self.players[t2p1]['elo'] += t2p1Change
+        self.players[t2p2]['elo'] += t2p2Change
 
         telemetry = {}
         telemetry["score"] = [t1Score, t2Score]
@@ -124,10 +127,10 @@ class Leaderboard:
                                f"{t2p2Elo:.2f}"
             ]
         telemetry["newElo"] = [
-            f"{self.players[t1p1]:.2f}", 
-            f"{self.players[t1p2]:.2f}", 
-            f"{self.players[t2p1]:.2f}", 
-            f"{self.players[t2p2]:.2f}"
+            f"{self.players[t1p1]['elo']:.2f}", 
+            f"{self.players[t1p2]['elo']:.2f}", 
+            f"{self.players[t2p1]['elo']:.2f}", 
+            f"{self.players[t2p2]['elo']:.2f}"
             ]
         telemetry["eloDelta"] = [
             f"{'+' if t1p1Change > 0 else ''}{t1p1Change:.2f}", 
@@ -141,8 +144,10 @@ class Leaderboard:
     
     def add1pGame(self, p1, p2, s1, s2, winElo = 100, lossElo = -100):
         
-        p1Elo = self.players[p1]
-        p2Elo = self.players[p2]
+        timestamp = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
+
+        p1Elo = self.players[p1]['elo']
+        p2Elo = self.players[p2]['elo']
         upsetMult = self.get1pUpsetMult(p1Elo, p2Elo, s1, s2)
         scoreDeltaMult = self.getScoreDeltaMult(s1, s2)
         lobbyElo = sum([p1Elo, p2Elo]) / 2
@@ -154,10 +159,35 @@ class Leaderboard:
             p1Change = lossElo * upsetMult * self.getLobbyEloMult(lobbyElo, p1Elo, False) * scoreDeltaMult
             p2Change = winElo * upsetMult * self.getLobbyEloMult(lobbyElo, p2Elo, True) * scoreDeltaMult
 
-        self.players[p1] += p1Change
-        self.players[p2] += p2Change
+        self.players[p1]['elo'] += p1Change
+        self.players[p2]['elo'] += p2Change
 
-        
+        # add match report to profile
+        self.players[p1]['matches'].append({
+            'type': 'singles',
+            'timestamp': timestamp,
+            'opponent': p2,
+            'self_elo_prior': p1Elo,
+            'self_elo_delta': p1Change, 
+            'self_elo_after': p1Elo + p1Change,
+            'opponent_elo': p2Elo,
+            'win': s1 > s2,
+            'self_score': s1,
+            'opponent_score': s2
+        })
+
+        self.players[p2]['matches'].append({
+            'type': 'singles',
+            'timestamp': timestamp,
+            'opponent': p1,
+            'self_elo_prior': p2Elo,
+            'self_elo_delta': p2Change, 
+            'self_elo_after': p2Elo + p2Change,
+            'opponent_elo': p1Elo,
+            'win': s1 < s2,
+            'self_score': s2,
+            'opponent_score': s1
+        })
 
         telemetry = {}
         telemetry["score"] = [s1, s2]
@@ -167,8 +197,8 @@ class Leaderboard:
                                f"{p2Elo:.2f}"
             ]
         telemetry["newElo"] = [
-            f"{self.players[p1]:.2f}", 
-            f"{self.players[p2]:.2f}"
+            f"{self.players[p1]['elo']:.2f}", 
+            f"{self.players[p2]['elo']:.2f}"
             ]
         telemetry["eloDelta"] = [
             f"{'+' if p1Change > 0 else ''}{p1Change:.2f}", 
