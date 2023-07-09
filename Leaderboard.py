@@ -90,6 +90,9 @@ class Leaderboard:
         return scoreDeltaConstant * delta / 21
 
     def add2pGame(self, t1p1, t1p2, t2p1, t2p2, t1Score, t2Score, winElo = 100, lossElo = -100):
+
+        timestamp = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
+
         t1p1Elo = self.players[t1p1]['elo']
         t1p2Elo = self.players[t1p2]['elo']
         t2p1Elo = self.players[t2p1]['elo']
@@ -116,6 +119,71 @@ class Leaderboard:
         self.players[t1p2]['elo'] += t1p2Change
         self.players[t2p1]['elo'] += t2p1Change
         self.players[t2p2]['elo'] += t2p2Change
+
+        # add match report to profile
+        self.players[t1p1]['matches'].append({
+            'type': 'doubles',
+            'timestamp': timestamp,
+            'teammate': t1p2,
+            'opponent1': t2p1,
+            'opponent2': t2p2,
+            'self_elo_prior': t1p1Elo,
+            'self_elo_delta': t1p1Change,
+            'self_elo_after': t1p1Elo + t1p1Change,
+            'opponent1_elo': t2p1Elo,
+            'opponent2_elo': t2p2Elo,
+            'win': t1Score > t2Score,
+            'self_score': t1Score,
+            'opponent_score': t2Score
+        })
+
+        self.players[t1p2]['matches'].append({
+            'type': 'doubles',
+            'timestamp': timestamp,
+            'teammate': t1p1,
+            'opponent1': t2p1,
+            'opponent2': t2p2,
+            'self_elo_prior': t1p2Elo,
+            'self_elo_delta': t1p2Change,
+            'self_elo_after': t1p2Elo + t1p2Change,
+            'opponent1_elo': t2p1Elo,
+            'opponent2_elo': t2p2Elo,
+            'win': t1Score > t2Score,
+            'self_score': t1Score,
+            'opponent_score': t2Score
+        })
+
+        self.players[t2p1]['matches'].append({
+            'type': 'doubles',
+            'timestamp': timestamp,
+            'teammate': t2p2,
+            'opponent1': t1p1,
+            'opponent2': t1p2,
+            'self_elo_prior': t2p1Elo,
+            'self_elo_delta': t2p1Change,
+            'self_elo_after': t2p1Elo + t2p1Change,
+            'opponent1_elo': t1p1Elo,
+            'opponent2_elo': t1p2Elo,
+            'win': t1Score < t2Score,
+            'self_score': t2Score,
+            'opponent_score': t1Score
+        })
+
+        self.players[t2p2]['matches'].append({
+            'type': 'doubles',
+            'timestamp': timestamp,
+            'teammate': t2p1,
+            'opponent1': t1p1,
+            'opponent2': t1p2,
+            'self_elo_prior': t2p2Elo,
+            'self_elo_delta': t2p2Change,
+            'self_elo_after': t2p2Elo + t2p2Change,
+            'opponent1_elo': t1p1Elo,
+            'opponent2_elo': t1p2Elo,
+            'win': t1Score < t2Score,
+            'self_score': t2Score,
+            'opponent_score': t1Score
+        })
 
         telemetry = {}
         telemetry["score"] = [t1Score, t2Score]
