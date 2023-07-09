@@ -22,7 +22,7 @@ def loadLb():
 def saveLb(lb):
     lbdata = lb.dumpData()
     with open("lbdata.json", "w") as f:
-        json.dump(lbdata, f)
+        json.dump(lbdata, f, indent=4)
     print("Leaderboard saved.")
 
 def stringSanitation(string): # responds with False if sanitation fails, or responds with sanitized string if succeeds

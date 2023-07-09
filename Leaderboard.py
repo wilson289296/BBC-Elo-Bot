@@ -17,7 +17,7 @@ class Leaderboard:
         else:
             self.players[name] = {
                 "elo": 1500,
-                "matches": []
+                "matches": {}
             }
             return True
     
@@ -121,9 +121,8 @@ class Leaderboard:
         self.players[t2p2]['elo'] += t2p2Change
 
         # add match report to profile
-        self.players[t1p1]['matches'].append({
+        self.players[t1p1]['matches'][timestamp] = {
             'type': 'doubles',
-            'timestamp': timestamp,
             'teammate': t1p2,
             'opponent1': t2p1,
             'opponent2': t2p2,
@@ -136,11 +135,10 @@ class Leaderboard:
             'win': t1Score > t2Score,
             'self_score': t1Score,
             'opponent_score': t2Score
-        })
+        }
 
-        self.players[t1p2]['matches'].append({
+        self.players[t1p2]['matches'][timestamp] = {
             'type': 'doubles',
-            'timestamp': timestamp,
             'teammate': t1p1,
             'opponent1': t2p1,
             'opponent2': t2p2,
@@ -153,11 +151,10 @@ class Leaderboard:
             'win': t1Score > t2Score,
             'self_score': t1Score,
             'opponent_score': t2Score
-        })
+        }
 
-        self.players[t2p1]['matches'].append({
+        self.players[t2p1]['matches'][timestamp] = {
             'type': 'doubles',
-            'timestamp': timestamp,
             'teammate': t2p2,
             'opponent1': t1p1,
             'opponent2': t1p2,
@@ -170,11 +167,10 @@ class Leaderboard:
             'win': t1Score < t2Score,
             'self_score': t2Score,
             'opponent_score': t1Score
-        })
+        }
 
-        self.players[t2p2]['matches'].append({
+        self.players[t2p2]['matches'][timestamp] = {
             'type': 'doubles',
-            'timestamp': timestamp,
             'teammate': t2p1,
             'opponent1': t1p1,
             'opponent2': t1p2,
@@ -187,7 +183,7 @@ class Leaderboard:
             'win': t1Score < t2Score,
             'self_score': t2Score,
             'opponent_score': t1Score
-        })
+        }
 
         telemetry = {}
         telemetry["score"] = [t1Score, t2Score]
@@ -235,9 +231,8 @@ class Leaderboard:
         self.players[p2]['elo'] += p2Change
 
         # add match report to profile
-        self.players[p1]['matches'].append({
+        self.players[p1]['matches'][timestamp] = {
             'type': 'singles',
-            'timestamp': timestamp,
             'opponent': p2,
             'self_elo_prior': p1Elo,
             'self_elo_delta': p1Change, 
@@ -246,11 +241,10 @@ class Leaderboard:
             'win': s1 > s2,
             'self_score': s1,
             'opponent_score': s2
-        })
+        }
 
-        self.players[p2]['matches'].append({
+        self.players[p2]['matches'][timestamp] = {
             'type': 'singles',
-            'timestamp': timestamp,
             'opponent': p1,
             'self_elo_prior': p2Elo,
             'self_elo_delta': p2Change, 
@@ -259,7 +253,7 @@ class Leaderboard:
             'win': s1 < s2,
             'self_score': s2,
             'opponent_score': s1
-        })
+        }
 
         telemetry = {}
         telemetry["score"] = [s1, s2]
