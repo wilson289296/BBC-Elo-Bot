@@ -131,6 +131,23 @@ async def addPlayer(interaction: discord.Interaction, name: str):
         print(f"Attempted to add new player but \"{name}\" already exists.")
         await interaction.response.send_message(f":exclamation: Attempted to add new player but \"{name}\" already exists. :exclamation:")
 
+@bot.tree.command(name = "removeplayer")
+@app_commands.describe(name = "Name of player to be deleted")
+async def removePlayer(interaction: discord.Interaction, name: str, password: str):
+    name = stringSanitation(name)
+
+    with open('pw.key') as f:
+        pw = f.readline()
+    if password == pw: 
+        lb = loadLb()
+        if lb.delPlayer(name):
+            saveLb(lb)
+            await interaction.response.send_message(f"{name} has been removed from the leaderboard.")
+        else:
+            await interaction.response.send_message(f"Player \"{name}\" does not exist.")
+    else:
+        await interaction.response.send_message(f"Incorrect password.")
+    
 
 @bot.tree.command(name="setelo")
 @app_commands.describe(name = "Name of player to adjust", elo = "Elo value to set", password = "Admin password")

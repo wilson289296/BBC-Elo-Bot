@@ -22,7 +22,7 @@ class Leaderboard:
             return True
     
     def delPlayer(self, name):
-        if name in self.players:
+        if name not in self.players:
             return False
         else:
             self.players.pop(name)
