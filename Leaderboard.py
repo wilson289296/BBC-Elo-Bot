@@ -132,6 +132,7 @@ class Leaderboard:
             'self_elo_after': t1p1Elo + t1p1Change,
             'opponent1_elo': t2p1Elo,
             'opponent2_elo': t2p2Elo,
+            'teammate_elo': t1p2Elo,
             'win': t1Score > t2Score,
             'self_score': t1Score,
             'opponent_score': t2Score
@@ -148,6 +149,7 @@ class Leaderboard:
             'self_elo_after': t1p2Elo + t1p2Change,
             'opponent1_elo': t2p1Elo,
             'opponent2_elo': t2p2Elo,
+            'teammate_elo': t1p1Elo,
             'win': t1Score > t2Score,
             'self_score': t1Score,
             'opponent_score': t2Score
@@ -164,6 +166,7 @@ class Leaderboard:
             'self_elo_after': t2p1Elo + t2p1Change,
             'opponent1_elo': t1p1Elo,
             'opponent2_elo': t1p2Elo,
+            'teammate_elo': t2p2Elo,
             'win': t1Score < t2Score,
             'self_score': t2Score,
             'opponent_score': t1Score
@@ -180,6 +183,7 @@ class Leaderboard:
             'self_elo_after': t2p2Elo + t2p2Change,
             'opponent1_elo': t1p1Elo,
             'opponent2_elo': t1p2Elo,
+            'teammate_elo': t2p1Elo,
             'win': t1Score < t2Score,
             'self_score': t2Score,
             'opponent_score': t1Score
