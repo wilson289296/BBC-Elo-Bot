@@ -2,3 +2,4 @@
 add "games played" tracker, and add display to leaderboard embed
 undo function for game submission
 game submission checks if is a duplicate
+add non-username player id for players, use that for match history

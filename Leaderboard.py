@@ -87,7 +87,7 @@ class Leaderboard:
             
     def getScoreDeltaMult(self, t1Score, t2Score, scoreDeltaConstant = 1):
         delta = abs(t1Score - t2Score)
-        return scoreDeltaConstant * delta / 21
+        return scoreDeltaConstant * (delta - 1) / 20
 
     def add2pGame(self, t1p1, t1p2, t2p1, t2p2, t1Score, t2Score, winElo = 100, lossElo = -100):
 
